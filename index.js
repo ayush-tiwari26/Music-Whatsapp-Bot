@@ -2,8 +2,7 @@ const {Client,  MessageMedia, ChatTypes}= require('whatsapp-web.js')
 const qrcode=require('qrcode-terminal')//rq code generator
 const fs=require('fs')// file systerm
 const yts= require('yt-search') //yt search
-var Downloader = require("./downloader");// mp3 downloader
-var ytDown=new Downloader();
+
 const DownloadYTFile = require('yt-dl-playlist')
 
 //downloader, downloades yt by videoId
@@ -54,8 +53,15 @@ client.on('message', message => {
     //making array of the text got
     var msgArr=message.body.split(" ");
     //formatting elements
-    msgArr.map((str)=>{str=str.trim();return(str.toLowerCase())})
+    msgArr[0]=msgArr[0].toLowerCase();
+    for (var i=2;i<msgArr.length;i++){
+        msgArr[1]=msgArr[1]+" "+msgArr[i];
+    }
+    console.log(msgArr)
     if(msgArr[0]=="play" || msgArr[0]=="sing"){
+        if(msgArr[1].trim()==null){
+            return;
+        }
         console.log(msgArr[1]);
         findYtSong(msgArr[1],message);
     }
@@ -72,20 +78,13 @@ async function findYtSong(songName,message){
 	downloadSong(v.videoId,v.title,message)
 })}
 
-
-
-//function to download song given
+//function to download song given and reply
 async function downloadSong(videoID,songName,message) {
     console.log("Starting")
+    message.reply("Starting Download")
     const download = await downloader.download(videoID, `${videoID}.mp3`);
     console.log("Downloaded")
     const media = MessageMedia.fromFilePath("./downloads/"+videoID+".mp3")
     message.reply(media);
 }
 
-//function to send song downloaded
-function sendMedia(file,message){
-    console.log(file)
-    const media= MessageMedia.fromFilePath(file);
-    message.reply(media);
-}
