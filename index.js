@@ -1,4 +1,4 @@
-const {Client,  MessageMedia, ChatTypes}= require('whatsapp-web.js')
+const {Client,  MessageMedia}= require('whatsapp-web.js')
 const qrcode=require('qrcode-terminal')//rq code generator
 const fs=require('fs')// file systerm
 const yts= require('yt-search') //yt search
@@ -57,8 +57,10 @@ client.on('message', message => {
     for (var i=2;i<msgArr.length;i++){
         msgArr[1]=msgArr[1]+" "+msgArr[i];
     }
-    console.log(msgArr)
-    if(msgArr[0]=="play" || msgArr[0]=="sing"){
+    if(msgArr[0]=="help"){
+        message.reply("Use syntax => *$play <song name & artist / some discription>*")
+    }
+    if(msgArr[0]=="$play" || msgArr[0]=="$sing"){
         if(msgArr[1].trim()==null){
             return;
         }
@@ -67,24 +69,38 @@ client.on('message', message => {
     }
 });
 
+//replying to your own msgs
+// client.on()
+
 client.initialize();
 
 //function to find the yt song videoID by the name given
 async function findYtSong(songName,message){
+    try{
     const r=  await yts (songName);
     const videos = r.videos.slice( 0, 1 )
     videos.forEach( function ( v ) {
     console.log(v.videoId)
 	downloadSong(v.videoId,v.title,message)
-})}
+    })
+}
+catch(e){
+    message.reply("Some Error Occured Finding The Song")
+}}
 
 //function to download song given and reply
 async function downloadSong(videoID,songName,message) {
+    try{
     console.log("Starting")
     message.reply("Starting Download")
     const download = await downloader.download(videoID, `${videoID}.mp3`);
     console.log("Downloaded")
     const media = MessageMedia.fromFilePath("./downloads/"+videoID+".mp3")
-    message.reply(media);
+    await message.reply(media);
+    fs.unlinkSync("./downloads/"+videoID+".mp3");
+    }
+    catch(e){
+        message.reply("Some Error Occured Downloading this song")
+    }
 }
 
